@@ -1,0 +1,5 @@
+debug\
+.qmake.stash
+release\
+Makefile.Debug
+Makefile.Release
