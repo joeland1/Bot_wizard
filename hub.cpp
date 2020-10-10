@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QStackedWidget>
 #include <QToolBar>
+#include <QLineEdit>
 
 #include "hub.h"
 
@@ -15,11 +16,19 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
   crypto_widget = new Crypto_window;
   level_widget = new Level_window;
 
+  token_widget = new QWidget;
+  QLineEdit *token = new QLineEdit("");
+  token->setEchoMode(QLineEdit::Password);
+  QVBoxLayout *token_tab_layout = new QVBoxLayout;
+  token_tab_layout -> addWidget(token);
+  token_widget -> setLayout(token_tab_layout);
+
   stackedWidget = new QStackedWidget(this);
     stackedWidget->addWidget(home_widget);
     stackedWidget->addWidget(mod_widget);
     stackedWidget->addWidget(crypto_widget);
     stackedWidget->addWidget(level_widget);
+    stackedWidget->addWidget(token_widget);
 
   QAction *reset = new QAction("&Reset", this);
   QAction *export_ = new QAction("&Export", this); //doesnt work yet
@@ -40,6 +49,10 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
   QAction *tool_bar_home = new QAction("&Home");
     toolbar->addAction(tool_bar_home);
     connect(tool_bar_home, &QAction::triggered, this,[this]{stackedWidget->setCurrentWidget(home_widget);});
+
+  QAction *tool_bar_token = new QAction("&Token");
+    toolbar->addAction(tool_bar_token);
+    connect(tool_bar_token, &QAction::triggered, this,[this]{stackedWidget->setCurrentWidget(token_widget);});
 
   QVBoxLayout *vLayout = new QVBoxLayout;
 

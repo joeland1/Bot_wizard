@@ -25,6 +25,7 @@ class Hub : public QMainWindow {
     QStackedWidget *stackedWidget;
     QToolBar *toolbar;
 
+    QWidget *token_widget;
     QWidget *home_widget;
     Mod_window *mod_widget;
     Crypto_window *crypto_widget;
