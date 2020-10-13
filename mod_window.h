@@ -1,4 +1,5 @@
 #include <QWidget>
+#include <QGridLayout>
 
 class Mod_window : public QWidget {
 
@@ -9,5 +10,6 @@ class Mod_window : public QWidget {
   private slots:
     void enable_member_control(int state);
   private:
+    QGridLayout *member_control_layout;
 
 };
