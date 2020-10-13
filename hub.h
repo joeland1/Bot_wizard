@@ -6,6 +6,7 @@
 #include <QStackedWidget>
 #include <QToolBar>
 #include <QCheckBox>
+//#include <QSqlDatabase>
 
 #include "mod_window.h"
 #include "crypto_window.h"
@@ -20,8 +21,12 @@ class Hub : public QMainWindow {
 
   private slots:
     void enable_widget(int state, QAction *desire);
+    void create_file();
 
   private:
+    void get_token();
+    void get_mod_rules();
+
     QStackedWidget *stackedWidget;
     QToolBar *toolbar;
 

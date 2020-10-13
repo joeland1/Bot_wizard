@@ -6,6 +6,9 @@
 #include <QStackedWidget>
 #include <QToolBar>
 #include <QLineEdit>
+#include <QSqlDatabase>
+#include <QMessageBox>
+#include <QSqlQuery>
 
 #include "hub.h"
 
@@ -31,7 +34,9 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
     stackedWidget->addWidget(token_widget);
 
   QAction *reset = new QAction("&Reset", this);
-  QAction *export_ = new QAction("&Export", this); //doesnt work yet
+  QAction *export_ = new QAction("&Save", this);
+    connect(export_, &QAction::triggered, this, &Hub::create_file);
+    export_->setShortcut(tr("CTRL+S"));
   QAction *quit = new QAction("&Quit", this);
     connect(quit, &QAction::triggered, qApp, QApplication::quit);
     quit->setShortcut(tr("CTRL+Q"));
@@ -97,4 +102,47 @@ void Hub::enable_widget(int factor, QAction* desire)
     desire->setVisible(false);
   else if (factor == 2)
     desire->setVisible(true);
+}
+
+void Hub::create_file()
+{
+  QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+  db.setDatabaseName("lauch.db");
+
+  if (!db.open())
+  {
+    QMessageBox::warning(this,
+     tr("Cannot open database"),
+     tr("Did not write data."),
+     QMessageBox::Close);
+  }
+
+  Hub::get_token();
+  //setWindowTitle(edit->text());
+}
+
+void Hub::get_token()
+{
+  QSqlQuery query;
+
+  query.exec("CREATE TABLE DISCORD_TOKEN("  \
+      "token           TEXT    NOT NULL);");
+  query.exec("select count(token) from DISCORD_TOKEN;");
+
+  query.next();
+  if(query.value(0).toInt()>=1)
+  {
+    setWindowTitle(query.value(0).toString());
+    query.exec("delete from DISCORD_TOKEN");
+  }
+
+  QLineEdit *edit = token_widget->findChild<QLineEdit *>();
+  query.prepare("insert into DISCORD_TOKEN values (?)");
+  query.addBindValue(QString(edit->text()));
+  query.exec();
+}
+
+void Hub::get_mod_rules()
+{
+
 }
