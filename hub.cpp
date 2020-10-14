@@ -129,7 +129,7 @@ void Hub::get_token()
 
   query.exec("CREATE TABLE DISCORD_TOKEN("  \
       "token           TEXT    NOT NULL);");
-  query.exec("select count(token) from DISCORD_TOKEN;");
+  query.exec("select count(*) from DISCORD_TOKEN;");
 
   query.next();
   if(query.value(0).toInt()>=1)
@@ -152,6 +152,15 @@ void Hub::get_mod_rules()
       "can_ban      INT DEFAULT 0   NOT NULL,"
       "can_unban    INT DEFAULT 0   NOT NULL,"
       "can_kick    INT DEFAULT 0   NOT NULL);");
+
+  query.exec("select count(*) from MOD_STUFF;");
+
+  query.next();
+  if(query.value(0).toInt()>=1)
+  {
+    setWindowTitle(query.value(0).toString());
+    query.exec("delete from MOD_STUFF");
+  }
 
   QList<QCheckBox *> features = mod_widget->findChildren<QCheckBox *>();
   QList<QCheckBox *> in_features_but_remove = mod_widget->findChildren<QCheckBox *>("title box");
