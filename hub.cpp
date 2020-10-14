@@ -118,6 +118,7 @@ void Hub::create_file()
   }
 
   Hub::get_token();
+  Hub::get_mod_rules();
   //setWindowTitle(edit->text());
 }
 
@@ -144,5 +145,12 @@ void Hub::get_token()
 
 void Hub::get_mod_rules()
 {
+  QSqlQuery query;
+  query.exec("CREATE TABLE MOD_STUFF("  \
+      "can_ban           INT    DEFAULT 0," \
+      "can_unban         INT    DEFAULT 0);");
 
+  //query.exec("delete from MOD_STUFF");
+
+  //QPushButton* member_control = mod_widget->findChild<QPushButton*>("can_ban");
 }
