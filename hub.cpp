@@ -9,6 +9,7 @@
 #include <QSqlDatabase>
 #include <QMessageBox>
 #include <QSqlQuery>
+#include <QList>
 
 #include "hub.h"
 
@@ -146,11 +147,41 @@ void Hub::get_token()
 void Hub::get_mod_rules()
 {
   QSqlQuery query;
-  query.exec("CREATE TABLE MOD_STUFF("  \
-      "can_ban           INT    DEFAULT 0," \
-      "can_unban         INT    DEFAULT 0);");
+  query.exec("CREATE TABLE MOD_STUFF("
+      "enabled      INT DEFAULT 0   NOT NULL,"
+      "can_ban      INT DEFAULT 0   NOT NULL,"
+      "can_unban    INT DEFAULT 0   NOT NULL,"
+      "can_kick    INT DEFAULT 0   NOT NULL);");
 
-  //query.exec("delete from MOD_STUFF");
+  QList<QCheckBox *> features = mod_widget->findChildren<QCheckBox *>();
+  QList<QCheckBox *> in_features_but_remove = mod_widget->findChildren<QCheckBox *>("title box");
+
+  while(!in_features_but_remove.isEmpty())
+  {
+    QCheckBox *remover = in_features_but_remove.takeFirst();
+    features.removeAll(remover);
+  }
+  //setWindowTitle(QString(features.size()));
+
+  if(!features.isEmpty())
+  {
+    query.exec("insert into MOD_STUFF (enabled) values (1);");
+
+    while(!features.isEmpty())
+    {
+      QCheckBox *x = features.takeFirst();
+
+      if(x->checkState() == Qt::Checked)
+      {
+        query.prepare("update MOD_STUFF set "+x->objectName()+"=1;");
+        setWindowTitle(QString(x->checkState()));
+        //query.addBindValue(QString(x->checkState()));
+        query.exec();
+      }
+    }
+  }
+  else
+    query.exec("insert into MOD_STUFF (enabled) values (0)");
 
   //QPushButton* member_control = mod_widget->findChild<QPushButton*>("can_ban");
 }
