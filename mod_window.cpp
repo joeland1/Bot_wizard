@@ -37,11 +37,11 @@ void Mod_window::enable_member_control(int state)
   if(state == 2)
   {
     QCheckBox* button1 = new QCheckBox("Can Ban");
-      button1->setObjectName("can_ban");
-    QCheckBox* button2 = new QCheckBox("Can Ban");
-      button2->setObjectName("can_unban");
+      button1->setObjectName("ban_command");
+    QCheckBox* button2 = new QCheckBox("Can Unban");
+      button2->setObjectName("unban_command");
     QCheckBox* button3 = new QCheckBox("Can Kick");
-      button3->setObjectName("can_kick");
+      button3->setObjectName("kick_command");
 
     QFormLayout *layout_test = new QFormLayout;
       layout_test->setObjectName("member control submenu");

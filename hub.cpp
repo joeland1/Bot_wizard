@@ -149,9 +149,9 @@ void Hub::get_mod_rules()
   QSqlQuery query;
   query.exec("CREATE TABLE MOD_STUFF("
       "enabled      INT DEFAULT 0   NOT NULL,"
-      "can_ban      INT DEFAULT 0   NOT NULL,"
-      "can_unban    INT DEFAULT 0   NOT NULL,"
-      "can_kick    INT DEFAULT 0   NOT NULL);");
+      "ban_command      INT DEFAULT 0   NOT NULL,"
+      "unban_command    INT DEFAULT 0   NOT NULL,"
+      "kick_command    INT DEFAULT 0   NOT NULL);");
 
   query.exec("select count(*) from MOD_STUFF;");
 
@@ -179,14 +179,7 @@ void Hub::get_mod_rules()
     while(!features.isEmpty())
     {
       QCheckBox *x = features.takeFirst();
-
-      if(x->checkState() == Qt::Checked)
-      {
-        query.prepare("update MOD_STUFF set "+x->objectName()+"=1;");
-        setWindowTitle(QString(x->checkState()));
-        //query.addBindValue(QString(x->checkState()));
-        query.exec();
-      }
+      query.exec("update MOD_STUFF set "+x->objectName()+"="+QString::number(x->checkState())+";");
     }
   }
   else
