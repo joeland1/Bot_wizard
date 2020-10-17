@@ -5,6 +5,11 @@
 #include <QWidget>
 #include <QStackedWidget>
 #include <QToolBar>
+#include <QLineEdit>
+#include <QSqlDatabase>
+#include <QMessageBox>
+#include <QSqlQuery>
+#include <QList>
 
 #include "hub.h"
 
@@ -15,14 +20,24 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
   crypto_widget = new Crypto_window;
   level_widget = new Level_window;
 
+  token_widget = new QWidget;
+  QLineEdit *token = new QLineEdit("");
+  token->setEchoMode(QLineEdit::Password);
+  QVBoxLayout *token_tab_layout = new QVBoxLayout;
+  token_tab_layout -> addWidget(token);
+  token_widget -> setLayout(token_tab_layout);
+
   stackedWidget = new QStackedWidget(this);
     stackedWidget->addWidget(home_widget);
     stackedWidget->addWidget(mod_widget);
     stackedWidget->addWidget(crypto_widget);
     stackedWidget->addWidget(level_widget);
+    stackedWidget->addWidget(token_widget);
 
   QAction *reset = new QAction("&Reset", this);
-  QAction *export_ = new QAction("&Export", this); //doesnt work yet
+  QAction *export_ = new QAction("&Save", this);
+    connect(export_, &QAction::triggered, this, &Hub::create_file);
+    export_->setShortcut(tr("CTRL+S"));
   QAction *quit = new QAction("&Quit", this);
     connect(quit, &QAction::triggered, qApp, QApplication::quit);
     quit->setShortcut(tr("CTRL+Q"));
@@ -40,6 +55,10 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
   QAction *tool_bar_home = new QAction("&Home");
     toolbar->addAction(tool_bar_home);
     connect(tool_bar_home, &QAction::triggered, this,[this]{stackedWidget->setCurrentWidget(home_widget);});
+
+  QAction *tool_bar_token = new QAction("&Token");
+    toolbar->addAction(tool_bar_token);
+    connect(tool_bar_token, &QAction::triggered, this,[this]{stackedWidget->setCurrentWidget(token_widget);});
 
   QVBoxLayout *vLayout = new QVBoxLayout;
 
@@ -84,4 +103,87 @@ void Hub::enable_widget(int factor, QAction* desire)
     desire->setVisible(false);
   else if (factor == 2)
     desire->setVisible(true);
+}
+
+void Hub::create_file()
+{
+  QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+  db.setDatabaseName("lauch.db");
+
+  if (!db.open())
+  {
+    QMessageBox::warning(this,
+     tr("Cannot open database"),
+     tr("Did not write data."),
+     QMessageBox::Close);
+  }
+
+  Hub::get_token();
+  Hub::get_mod_rules();
+  //setWindowTitle(edit->text());
+}
+
+void Hub::get_token()
+{
+  QSqlQuery query;
+
+  query.exec("CREATE TABLE DISCORD_TOKEN("  \
+      "token           TEXT    NOT NULL);");
+  query.exec("select count(*) from DISCORD_TOKEN;");
+
+  query.next();
+  if(query.value(0).toInt()>=1)
+  {
+    setWindowTitle(query.value(0).toString());
+    query.exec("delete from DISCORD_TOKEN");
+  }
+
+  QLineEdit *edit = token_widget->findChild<QLineEdit *>();
+  query.prepare("insert into DISCORD_TOKEN values (?)");
+  query.addBindValue(QString(edit->text()));
+  query.exec();
+}
+
+void Hub::get_mod_rules()
+{
+  QSqlQuery query;
+  query.exec("CREATE TABLE MOD_STUFF("
+      "enabled      INT DEFAULT 0   NOT NULL,"
+      "ban_command      INT DEFAULT 0   NOT NULL,"
+      "unban_command    INT DEFAULT 0   NOT NULL,"
+      "kick_command    INT DEFAULT 0   NOT NULL);");
+
+  query.exec("select count(*) from MOD_STUFF;");
+
+  query.next();
+  if(query.value(0).toInt()>=1)
+  {
+    setWindowTitle(query.value(0).toString());
+    query.exec("delete from MOD_STUFF");
+  }
+
+  QList<QCheckBox *> features = mod_widget->findChildren<QCheckBox *>();
+  QList<QCheckBox *> in_features_but_remove = mod_widget->findChildren<QCheckBox *>("title box");
+
+  while(!in_features_but_remove.isEmpty())
+  {
+    QCheckBox *remover = in_features_but_remove.takeFirst();
+    features.removeAll(remover);
+  }
+  //setWindowTitle(QString(features.size()));
+
+  if(!features.isEmpty())
+  {
+    query.exec("insert into MOD_STUFF (enabled) values (1);");
+
+    while(!features.isEmpty())
+    {
+      QCheckBox *x = features.takeFirst();
+      query.exec("update MOD_STUFF set "+x->objectName()+"="+QString::number(x->checkState())+";");
+    }
+  }
+  else
+    query.exec("insert into MOD_STUFF (enabled) values (0)");
+
+  //QPushButton* member_control = mod_widget->findChild<QPushButton*>("can_ban");
 }
