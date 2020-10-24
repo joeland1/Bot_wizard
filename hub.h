@@ -26,6 +26,7 @@ class Hub : public QMainWindow {
   private:
     void get_token();
     void get_mod_rules();
+    void get_level();
 
     QStackedWidget *stackedWidget;
     QToolBar *toolbar;

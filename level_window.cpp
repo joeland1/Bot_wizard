@@ -12,6 +12,7 @@ Level_window::Level_window(QWidget *parent):QWidget(parent)
 {
   QVBoxLayout *main_layout = new QVBoxLayout;
   rank_name_and_level = new QGridLayout;
+    rank_name_and_level->setObjectName("rank box");
 
   main_layout->addLayout(rank_name_and_level);
 

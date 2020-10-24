@@ -120,6 +120,7 @@ void Hub::create_file()
 
   Hub::get_token();
   Hub::get_mod_rules();
+  Hub::get_level();
   //setWindowTitle(edit->text());
 }
 
@@ -170,7 +171,6 @@ void Hub::get_mod_rules()
     QCheckBox *remover = in_features_but_remove.takeFirst();
     features.removeAll(remover);
   }
-  //setWindowTitle(QString(features.size()));
 
   if(!features.isEmpty())
   {
@@ -184,6 +184,31 @@ void Hub::get_mod_rules()
   }
   else
     query.exec("insert into MOD_STUFF (enabled) values (0)");
+}
 
-  //QPushButton* member_control = mod_widget->findChild<QPushButton*>("can_ban");
+void Hub::get_level()
+{
+  QSqlQuery query;
+  query.exec("CREATE TABLE LEVELING_SYSTEM("
+      "rank_name           TEXT    NOT NULL,"
+      "rank_number         INT     NOT NULL);");
+
+  query.exec("select count(*) from LEVELING_SYSTEM;");
+
+  query.next();
+  if(query.value(0).toInt()>=1)
+  {
+    setWindowTitle(query.value(0).toString());
+    query.exec("delete from LEVELING_SYSTEM");
+  }
+
+  QGridLayout *all_the_ranks = level_widget->findChild<QGridLayout *>("rank box");
+  for (int i=1;i<all_the_ranks->rowCount();i++)
+  {
+    //setWindowTitle(all_the_ranks->rowCount());
+    query.prepare("insert into LEVELING_SYSTEM (rank_number, rank_name) values (?,?)");
+    query.addBindValue(dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,0)->widget())->text().toInt());
+    query.addBindValue(dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,1)->widget())->text());
+    query.exec();
+  }
 }
