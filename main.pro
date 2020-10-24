@@ -15,13 +15,15 @@ SOURCES += \
     hub.cpp \
     mod_window.cpp \
     crypto_window.cpp \
-    level_window.cpp
+    level_window.cpp \
+    stream_window.cpp
 
 HEADERS += \
     hub.h \
     mod_window.h \
     crypto_window.h \
-    level_window.h
+    level_window.h \
+    stream_window.h
 
 FORMS +=
 

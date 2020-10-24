@@ -19,6 +19,7 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
   mod_widget = new Mod_window;
   crypto_widget = new Crypto_window;
   level_widget = new Level_window;
+  stream_widget = new Stream_window;
 
   token_widget = new QWidget;
   QLineEdit *token = new QLineEdit("");
@@ -32,6 +33,7 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
     stackedWidget->addWidget(mod_widget);
     stackedWidget->addWidget(crypto_widget);
     stackedWidget->addWidget(level_widget);
+    stackedWidget->addWidget(stream_widget);
     stackedWidget->addWidget(token_widget);
 
   QAction *reset = new QAction("&Reset", this);
@@ -90,6 +92,15 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
     vLayout->addWidget(check_crypto);
     connect(check_crypto, &QCheckBox::stateChanged, this, [=](int state){
       enable_widget(state, tool_bar_crypto);
+    });
+  QAction *tool_bar_stream = new QAction("&Stream");
+    toolbar->addAction(tool_bar_stream);
+    tool_bar_stream->setVisible(false);
+    connect(tool_bar_stream, &QAction::triggered, this,[this]{stackedWidget->setCurrentWidget(stream_widget);});
+  QCheckBox *check_stream = new QCheckBox("Stream");
+    vLayout->addWidget(check_stream);
+    connect(check_stream, &QCheckBox::stateChanged, this, [=](int state){
+      enable_widget(state, tool_bar_stream);
     });
 
   home_widget->setLayout(vLayout);

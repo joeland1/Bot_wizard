@@ -11,6 +11,7 @@
 #include "mod_window.h"
 #include "crypto_window.h"
 #include "level_window.h"
+#include "stream_window.h"
 
 class Hub : public QMainWindow {
 
@@ -36,4 +37,5 @@ class Hub : public QMainWindow {
     Mod_window *mod_widget;
     Crypto_window *crypto_widget;
     Level_window *level_widget;
+    Stream_window *stream_widget;
 };
