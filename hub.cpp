@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QList>
+#include <QMessageBox>
 
 #include "hub.h"
 
@@ -84,7 +85,7 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
       enable_widget(state, tool_bar_leveling);
     });
 
-  QAction *tool_bar_crypto = new QAction("&Crypto");
+  /*QAction *tool_bar_crypto = new QAction("&Crypto");
     tool_bar_crypto->setVisible(false);
     toolbar->addAction(tool_bar_crypto);
     connect(tool_bar_crypto, &QAction::triggered, this,[this]{stackedWidget->setCurrentWidget(crypto_widget);});
@@ -92,7 +93,7 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
     vLayout->addWidget(check_crypto);
     connect(check_crypto, &QCheckBox::stateChanged, this, [=](int state){
       enable_widget(state, tool_bar_crypto);
-    });
+    });*/
   QAction *tool_bar_stream = new QAction("&Stream");
     toolbar->addAction(tool_bar_stream);
     tool_bar_stream->setVisible(false);
@@ -101,6 +102,11 @@ Hub::Hub(QWidget *parent): QMainWindow(parent)
     vLayout->addWidget(check_stream);
     connect(check_stream, &QCheckBox::stateChanged, this, [=](int state){
       enable_widget(state, tool_bar_stream);
+        QMessageBox::information(this, tr("Bot Wizard"),
+                                 tr("This feature requires a seperate\n"
+                                    "Discord account. When inputting your\n"
+                                    "information, please do not use your actual account."),
+                                 QMessageBox::Ok);
     });
 
   home_widget->setLayout(vLayout);
@@ -118,7 +124,7 @@ void Hub::enable_widget(int factor, QAction* desire)
 
 void Hub::create_file()
 {
-  QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+  QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "bot");
   db.setDatabaseName("lauch.db");
 
   if (!db.open())
@@ -132,12 +138,13 @@ void Hub::create_file()
   Hub::get_token();
   Hub::get_mod_rules();
   Hub::get_level();
+  Hub::get_stream_config();
   //setWindowTitle(edit->text());
 }
 
 void Hub::get_token()
 {
-  QSqlQuery query;
+  QSqlQuery query(QSqlDatabase::database("bot"));
 
   query.exec("CREATE TABLE DISCORD_TOKEN("  \
       "token           TEXT    NOT NULL);");
@@ -158,8 +165,8 @@ void Hub::get_token()
 
 void Hub::get_mod_rules()
 {
-  QSqlQuery query;
-  query.exec("CREATE TABLE MOD_STUFF("
+  QSqlQuery query(QSqlDatabase::database("bot"));
+  query.exec("CREATE TABLE MOD_TOOLS("
       "enabled      INT DEFAULT 0   NOT NULL,"
       "ban_command      INT DEFAULT 0   NOT NULL,"
       "unban_command    INT DEFAULT 0   NOT NULL,"
@@ -171,7 +178,7 @@ void Hub::get_mod_rules()
   if(query.value(0).toInt()>=1)
   {
     setWindowTitle(query.value(0).toString());
-    query.exec("delete from MOD_STUFF");
+    query.exec("delete from MOD_TOOLS");
   }
 
   QList<QCheckBox *> features = mod_widget->findChildren<QCheckBox *>();
@@ -185,21 +192,21 @@ void Hub::get_mod_rules()
 
   if(!features.isEmpty())
   {
-    query.exec("insert into MOD_STUFF (enabled) values (1);");
+    query.exec("insert into MOD_TOOLS (enabled) values (1);");
 
     while(!features.isEmpty())
     {
       QCheckBox *x = features.takeFirst();
-      query.exec("update MOD_STUFF set "+x->objectName()+"="+QString::number(x->checkState())+";");
+      query.exec("update MOD_TOOLS set "+x->objectName()+"="+QString::number(x->checkState())+";");
     }
   }
   else
-    query.exec("insert into MOD_STUFF (enabled) values (0)");
+    query.exec("insert into MOD_TOOLS (enabled) values (0)");
 }
 
 void Hub::get_level()
 {
-  QSqlQuery query;
+  QSqlQuery query(QSqlDatabase::database("bot"));
   query.exec("CREATE TABLE LEVELING_SYSTEM("
       "rank_name           TEXT    NOT NULL,"
       "rank_number         INT     NOT NULL);");
@@ -222,4 +229,31 @@ void Hub::get_level()
     query.addBindValue(dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,1)->widget())->text());
     query.exec();
   }
+}
+
+void Hub::get_stream_config()
+{
+  QSqlDatabase stream_db = QSqlDatabase::addDatabase("QSQLITE", "stream dabatase");
+  stream_db.setDatabaseName("stream_server.db");
+
+  QSqlQuery query(QSqlDatabase::database("stream dabatase"));
+  query.exec("CREATE TABLE LOGIN_STUFF("
+      "username           TEXT    NOT NULL,"
+      "password           TEXT    NOT NULL);");
+
+    query.exec("select count(*) from LOGIN_STUFF;");
+
+    query.next();
+    if(query.value(0).toInt()>=1)
+    {
+      setWindowTitle(query.value(0).toString());
+      query.exec("delete from LOGIN_STUFF");
+    }
+
+  query.prepare("insert into LOGIN_STUFF (username, password) values (?,?)");
+
+  query.addBindValue(stream_widget->findChild<QLineEdit *>("account email")->text());
+  query.addBindValue(stream_widget->findChild<QLineEdit *>("account password")->text());
+  query.exec();
+
 }
