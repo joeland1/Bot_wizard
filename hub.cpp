@@ -163,8 +163,8 @@ void Hub::get_token()
   query.exec();
 
   query.exec("CREATE TABLE ENABLED_STUFF("
-      "mod_tools      INT DEFAULT 0   NOT NULL,"
-      "stream_cog    INT DEFAULT 0   NOT NULL,"
+      "MOD_TOOLS      INT DEFAULT 0   NOT NULL,"
+      "STREAM_STUFF    INT DEFAULT 0   NOT NULL,"
       "other    INT DEFAULT 0   NOT NULL);");
 
   query.exec("select count(*) from ENABLED_STUFF;");
@@ -205,7 +205,7 @@ void Hub::get_mod_rules()
 
   if(!features.isEmpty())
   {
-    query.exec("insert into ENABLED_STUFF (mod_tools) values (1);");
+    query.exec("insert into ENABLED_STUFF (MOD_TOOLS) values (1);");
     query.exec("insert into MOD_TOOLS (ban_command) values(0);");
 
     while(!features.isEmpty())
@@ -215,7 +215,7 @@ void Hub::get_mod_rules()
     }
   }
   else
-    query.exec("insert into ENABLED_STUFF (mod_tools) values (0)");
+    query.exec("insert into ENABLED_STUFF (MOD_TOOLS) values (0)");
 }
 
 void Hub::get_level()
