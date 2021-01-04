@@ -17,7 +17,7 @@ Level_window::Level_window(QWidget *parent):QWidget(parent)
   main_layout->addLayout(rank_name_and_level);
 
   QLabel *title = new QLabel("Ranks");
-  QPushButton *add_role = new QPushButton("+");
+  QPushButton *add_role = new QPushButton("Clicking this button will add a row");
   connect(add_role, &QPushButton::pressed, this, &Level_window::create_level_grouping);
   this->create_level_grouping();
   this->create_level_grouping();
@@ -35,7 +35,7 @@ void Level_window::create_level_grouping()
   level->setValidator( new QIntValidator(0, 99999, this));
 
   QLineEdit *name = new QLineEdit("name", this);
-  QPushButton *remove = new QPushButton("-", this);
+  QPushButton *remove = new QPushButton("Clicking this button will remove this row", this);
 
   connect(remove, &QPushButton::clicked, this, [=]{
     delete level;

@@ -6,8 +6,7 @@ class Stream_window : public QWidget {
 
   public:
     Stream_window(QWidget *parent = nullptr);
-  private slots:
-    
-  private:
 
+  private slots:
+  private:
 };

@@ -161,18 +161,31 @@ void Hub::get_token()
   query.prepare("insert into DISCORD_TOKEN values (?)");
   query.addBindValue(QString(edit->text()));
   query.exec();
+
+  query.exec("CREATE TABLE ENABLED_STUFF("
+      "mod_tools      INT DEFAULT 0   NOT NULL,"
+      "stream_cog    INT DEFAULT 0   NOT NULL,"
+      "other    INT DEFAULT 0   NOT NULL);");
+
+  query.exec("select count(*) from ENABLED_STUFF;");
+
+  query.next();
+  if(query.value(0).toInt()>=1)
+  {
+    setWindowTitle(query.value(0).toString());
+    query.exec("delete from ENABLED_STUFF");
+  }
 }
 
 void Hub::get_mod_rules()
 {
   QSqlQuery query(QSqlDatabase::database("bot"));
   query.exec("CREATE TABLE MOD_TOOLS("
-      "enabled      INT DEFAULT 0   NOT NULL,"
       "ban_command      INT DEFAULT 0   NOT NULL,"
       "unban_command    INT DEFAULT 0   NOT NULL,"
       "kick_command    INT DEFAULT 0   NOT NULL);");
 
-  query.exec("select count(*) from MOD_STUFF;");
+  query.exec("select count(*) from MOD_TOOLS;");
 
   query.next();
   if(query.value(0).toInt()>=1)
@@ -192,7 +205,8 @@ void Hub::get_mod_rules()
 
   if(!features.isEmpty())
   {
-    query.exec("insert into MOD_TOOLS (enabled) values (1);");
+    query.exec("insert into ENABLED_STUFF (mod_tools) values (1);");
+    query.exec("insert into MOD_TOOLS (ban_command) values(0);");
 
     while(!features.isEmpty())
     {
@@ -201,7 +215,7 @@ void Hub::get_mod_rules()
     }
   }
   else
-    query.exec("insert into MOD_TOOLS (enabled) values (0)");
+    query.exec("insert into ENABLED_STUFF (mod_tools) values (0)");
 }
 
 void Hub::get_level()
@@ -224,36 +238,56 @@ void Hub::get_level()
   for (int i=1;i<all_the_ranks->rowCount();i++)
   {
     //setWindowTitle(all_the_ranks->rowCount());
-    query.prepare("insert into LEVELING_SYSTEM (rank_number, rank_name) values (?,?)");
-    query.addBindValue(dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,0)->widget())->text().toInt());
-    query.addBindValue(dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,1)->widget())->text());
-    query.exec();
+    QString number = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,0))->text();
+    QString role_name = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,1))->text();
+
+    if(number.size()>=1&&role_name.size()>=1)
+    {
+      query.prepare("insert into LEVELING_SYSTEM (rank_number, rank_name) values (?,?)");
+      query.addBindValue(number.toInt());
+      query.addBindValue(role_name);
+      query.exec();
+    }
   }
 }
 
 void Hub::get_stream_config()
 {
-  QSqlDatabase stream_db = QSqlDatabase::addDatabase("QSQLITE", "stream dabatase");
-  stream_db.setDatabaseName("stream_server.db");
+  QSqlQuery query(QSqlDatabase::database("bot"));
+  query.exec("CREATE TABLE STREAM_STUFF("
+      "enabled           int    NOT NULL);");
 
-  QSqlQuery query(QSqlDatabase::database("stream dabatase"));
-  query.exec("CREATE TABLE LOGIN_STUFF("
-      "username           TEXT    NOT NULL,"
-      "password           TEXT    NOT NULL);");
-
-    query.exec("select count(*) from LOGIN_STUFF;");
+    query.exec("select count(*) from STREAM_STUFF;");
 
     query.next();
     if(query.value(0).toInt()>=1)
     {
       setWindowTitle(query.value(0).toString());
-      query.exec("delete from LOGIN_STUFF");
+      query.exec("delete from STREAM_STUFF");
     }
 
-  query.prepare("insert into LOGIN_STUFF (username, password) values (?,?)");
 
-  query.addBindValue(stream_widget->findChild<QLineEdit *>("account email")->text());
-  query.addBindValue(stream_widget->findChild<QLineEdit *>("account password")->text());
-  query.exec();
+  QSqlDatabase stream_db = QSqlDatabase::addDatabase("QSQLITE", "stream dabatase");
+  stream_db.setDatabaseName("stream_server.db");
+
+  QSqlQuery query2(QSqlDatabase::database("stream dabatase"));
+  query2.exec("CREATE TABLE LOGIN_STUFF("
+      "username           TEXT    NOT NULL,"
+      "password           TEXT    NOT NULL);");
+
+    query2.exec("select count(*) from LOGIN_STUFF;");
+
+    query2.next();
+    if(query2.value(0).toInt()>=1)
+    {
+      setWindowTitle(query2.value(0).toString());
+      query2.exec("delete from LOGIN_STUFF");
+    }
+
+  query2.prepare("insert into LOGIN_STUFF (username, password) values (?,?)");
+
+  query2.addBindValue(stream_widget->findChild<QLineEdit *>("account email")->text());
+  query2.addBindValue(stream_widget->findChild<QLineEdit *>("account password")->text());
+  query2.exec();
 
 }
