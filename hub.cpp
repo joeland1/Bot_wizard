@@ -254,40 +254,43 @@ void Hub::get_level()
 void Hub::get_stream_config()
 {
   QSqlQuery query(QSqlDatabase::database("bot"));
-  query.exec("CREATE TABLE STREAM_STUFF("
-      "enabled           int    NOT NULL);");
 
-    query.exec("select count(*) from STREAM_STUFF;");
+  query.exec("select count(*) from STREAM_STUFF;");
 
-    query.next();
-    if(query.value(0).toInt()>=1)
-    {
-      setWindowTitle(query.value(0).toString());
-      query.exec("delete from STREAM_STUFF");
-    }
+  query.next();
+  if(query.value(0).toInt()>=1)
+  {
+    setWindowTitle(query.value(0).toString());
+    query.exec("delete from STREAM_STUFF");
+  }
 
+  query.exec("update ENABLED_STUFF (STREAM_STUFF) values (0)");
 
-  QSqlDatabase stream_db = QSqlDatabase::addDatabase("QSQLITE", "stream dabatase");
-  stream_db.setDatabaseName("stream_server.db");
+  if(stream_widget->findChild<QLineEdit *>("account email")->text().isEmpty()==false && stream_widget->findChild<QLineEdit *>("account password")->text()==false)
+  {
+    query.exec("update ENABLED_STUFF (STREAM_STUFF) values (0)");
+    
+    QSqlDatabase stream_db = QSqlDatabase::addDatabase("QSQLITE", "stream dabatase");
+    stream_db.setDatabaseName("stream_server.db");
 
-  QSqlQuery query2(QSqlDatabase::database("stream dabatase"));
-  query2.exec("CREATE TABLE LOGIN_STUFF("
-      "username           TEXT    NOT NULL,"
-      "password           TEXT    NOT NULL);");
+    QSqlQuery query2(QSqlDatabase::database("stream dabatase"));
+    query2.exec("CREATE TABLE LOGIN_STUFF("
+        "username           TEXT    NOT NULL,"
+        "password           TEXT    NOT NULL);");
 
-    query2.exec("select count(*) from LOGIN_STUFF;");
+      query2.exec("select count(*) from LOGIN_STUFF;");
 
-    query2.next();
-    if(query2.value(0).toInt()>=1)
-    {
-      setWindowTitle(query2.value(0).toString());
-      query2.exec("delete from LOGIN_STUFF");
-    }
+      query2.next();
+      if(query2.value(0).toInt()>=1)
+      {
+        setWindowTitle(query2.value(0).toString());
+        query2.exec("delete from LOGIN_STUFF");
+      }
 
-  query2.prepare("insert into LOGIN_STUFF (username, password) values (?,?)");
+    query2.prepare("insert into LOGIN_STUFF (username, password) values (?,?)");
 
-  query2.addBindValue(stream_widget->findChild<QLineEdit *>("account email")->text());
-  query2.addBindValue(stream_widget->findChild<QLineEdit *>("account password")->text());
-  query2.exec();
-
+    query2.addBindValue(stream_widget->findChild<QLineEdit *>("account email")->text());
+    query2.addBindValue(stream_widget->findChild<QLineEdit *>("account password")->text());
+    query2.exec();
+  }
 }
