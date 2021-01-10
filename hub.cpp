@@ -238,17 +238,17 @@ void Hub::get_level()
   for (int i=1;i<all_the_ranks->rowCount();i++)
   {
     //setWindowTitle(all_the_ranks->rowCount());
-    QString number = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,0))->text();
-    //QString role_name = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,1))->text();
+    QString number = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,0)->widget())->text();
+    QString role_name = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,1)->widget())->text();
 
-    /*
-    if(number.isEmpty()!=false&&role_name.isEmpty()!=false)
+    //idk y this check works, but it does so no touch
+    if(number.isEmpty()!=true&&role_name.isEmpty()!=true)
     {
       query.prepare("insert into LEVELING_SYSTEM (rank_name, rank_number) values (?,?);");
       query.addBindValue(role_name);
       query.addBindValue(number.toInt());
       query.exec();
-    }*/
+    }
   }
 }
 
