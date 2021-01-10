@@ -138,7 +138,7 @@ void Hub::create_file()
   Hub::get_token();
   Hub::get_mod_rules();
   Hub::get_level();
-  Hub::get_stream_config();
+  //Hub::get_stream_config();
   //setWindowTitle(edit->text());
 }
 
@@ -163,9 +163,8 @@ void Hub::get_token()
   query.exec();
 
   query.exec("CREATE TABLE ENABLED_STUFF("
-      "MOD_TOOLS      INT DEFAULT 0   NOT NULL,"
-      "STREAM_STUFF    INT DEFAULT 0   NOT NULL,"
-      "other    INT DEFAULT 0   NOT NULL);");
+      "cog_name      TEXT DEFAULT 0   NOT NULL,"
+      "status    INT DEFAULT 0   NOT NULL);");
 
   query.exec("select count(*) from ENABLED_STUFF;");
 
@@ -194,6 +193,9 @@ void Hub::get_mod_rules()
     query.exec("delete from MOD_TOOLS");
   }
 
+  query.exec("delete from ENABLED_STUFF where cog_name=MOD_TOOLS;");
+  query.exec("insert into ENABLED_STUFF (cog_name,status) values ('MOD_TOOLS',0);");
+
   QList<QCheckBox *> features = mod_widget->findChildren<QCheckBox *>();
   QList<QCheckBox *> in_features_but_remove = mod_widget->findChildren<QCheckBox *>("title box");
 
@@ -205,17 +207,16 @@ void Hub::get_mod_rules()
 
   if(!features.isEmpty())
   {
-    query.exec("insert into ENABLED_STUFF (MOD_TOOLS) values (1);");
     query.exec("insert into MOD_TOOLS (ban_command) values(0);");
 
     while(!features.isEmpty())
     {
       QCheckBox *x = features.takeFirst();
       query.exec("update MOD_TOOLS set "+x->objectName()+"="+QString::number(x->checkState())+";");
+      if(x->checkState()==Qt::Checked)
+        query.exec("update ENABLED_STUFF set status=1 where cog_name='MOD_TOOLS';");
     }
   }
-  else
-    query.exec("insert into ENABLED_STUFF (MOD_TOOLS) values (0)");
 }
 
 void Hub::get_level()
@@ -230,7 +231,6 @@ void Hub::get_level()
   query.next();
   if(query.value(0).toInt()>=1)
   {
-    setWindowTitle(query.value(0).toString());
     query.exec("delete from LEVELING_SYSTEM");
   }
 
@@ -239,21 +239,26 @@ void Hub::get_level()
   {
     //setWindowTitle(all_the_ranks->rowCount());
     QString number = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,0))->text();
-    QString role_name = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,1))->text();
+    //QString role_name = dynamic_cast<QLineEdit*>(all_the_ranks->itemAtPosition(i,1))->text();
 
-    if(number.size()>=1&&role_name.size()>=1)
+    /*
+    if(number.isEmpty()!=false&&role_name.isEmpty()!=false)
     {
-      query.prepare("insert into LEVELING_SYSTEM (rank_number, rank_name) values (?,?)");
-      query.addBindValue(number.toInt());
+      query.prepare("insert into LEVELING_SYSTEM (rank_name, rank_number) values (?,?);");
       query.addBindValue(role_name);
+      query.addBindValue(number.toInt());
       query.exec();
-    }
+    }*/
   }
 }
 
 void Hub::get_stream_config()
 {
   QSqlQuery query(QSqlDatabase::database("bot"));
+
+  query.exec("CREATE TABLE STREAM_STUFF("
+      "rank_name           TEXT    NOT NULL,"
+      "rank_number         INT     NOT NULL);");
 
   query.exec("select count(*) from STREAM_STUFF;");
 
@@ -264,12 +269,12 @@ void Hub::get_stream_config()
     query.exec("delete from STREAM_STUFF");
   }
 
-  query.exec("update ENABLED_STUFF (STREAM_STUFF) values (0)");
+  query.exec("insert into ENABLED_STUFF (cog_name,status) values ('STREAM_STUFF',0)");
 
-  if(stream_widget->findChild<QLineEdit *>("account email")->text().isEmpty()==false && stream_widget->findChild<QLineEdit *>("account password")->text()==false)
+  if(stream_widget->findChild<QLineEdit *>("account email")->text().isEmpty()==false && stream_widget->findChild<QLineEdit *>("account password")->text().isEmpty()==false)
   {
     query.exec("update ENABLED_STUFF (STREAM_STUFF) values (0)");
-    
+
     QSqlDatabase stream_db = QSqlDatabase::addDatabase("QSQLITE", "stream dabatase");
     stream_db.setDatabaseName("stream_server.db");
 
